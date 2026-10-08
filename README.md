@@ -25,7 +25,8 @@ Sem argumentos, o `mpm.exe` abre um menu (ANTIGO / NOVO).
 
 ## Licença e aviso
 
-Licenciado sob a [Apache License 2.0](LICENSE). Use **somente em computadores seus ou com autorização de quem os
+Licenciado sob a [PolyForm Noncommercial 1.0.0](LICENSE): uso, cópia e modificação livres para fins **não comerciais**
+(pessoal, estudo, pesquisa, ONGs etc.); uso comercial, inclusive venda, exige autorização do autor. Use **somente em computadores seus ou com autorização de quem os
 administra**: a ferramenta lê perfis de outros usuários, cria contas e lê senhas de Wi-Fi salvas (mediante
 administrador). O software é fornecido "como está", sem garantias; **teste antes** com dados que você possa perder e
 mantenha backup do PC antigo (o TX só lê, mas o RX grava no destino).

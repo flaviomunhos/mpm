@@ -7,7 +7,7 @@ name = "mpm"
 version = "0.5.11"
 description = "MPM — Munhos PC Migrator: migração de PCs Windows pela rede (perfil, programas, configurações e Wi-Fi)"
 readme = "README.md"
-license = "Apache-2.0"
+license = "LicenseRef-PolyForm-Noncommercial-1.0.0"
 license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "Flávio Munhos" }]
 requires-python = ">=3.12"
