@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.build-venv/
+build/
+dist/
+*.zip
+.pytest_cache/
+.venv/
+venv/
+# execuções e relatórios locais da migração (podem conter dados pessoais)
+migracao/
+logs/
+*.log
+transfer-report.json
+verified.jsonl
+inventory.jsonl

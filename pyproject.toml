@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mpm"
+version = "0.5.11"
+description = "MPM — Munhos PC Migrator: migração de PCs Windows pela rede (perfil, programas, configurações e Wi-Fi)"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Flávio Munhos" }]
+requires-python = ">=3.12"
+# Só o modo de rede (rx/tx) usa 'cryptography'; discover/scan/manifest funcionam sem ela.
+dependencies = ["cryptography>=42"]
+
+[project.urls]
+Homepage = "https://github.com/flaviomunhos/mpm"
+Issues = "https://github.com/flaviomunhos/mpm/issues"
+
+[project.scripts]
+mpm = "mpm.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["mpm*"]
