@@ -249,6 +249,9 @@ def run_settings(
             if any(r["status"] == "falhou" for r in summary["registry"]):
                 summary["ok"] = False
 
+    if "outlook" in ids and not dry_run and summary["registry"]:
+        summary["outlook"] = _outlook_notes(outdir / "settings" / "registry", source, to_user, dest_roots, log)
+
     chosen_wifi = [wifi_names[i] for i in picked if i in wifi_names]
     if chosen_wifi and backends.devices is not None:
         log("\nImportando redes Wi-Fi ...")
@@ -265,6 +268,21 @@ def run_settings(
             json.dumps(summary, indent=2, ensure_ascii=False, default=str) + "\n", encoding="utf-8")
         log(f"\nRelatório gravado em {out / 'settings-report.json'}")
     return summary
+
+
+def _outlook_notes(saved: Path, source: str, to_user: str | None, dest_roots: dict[str, Path],
+                   log: Callable[[str], None]) -> list[dict[str, str]]:
+    """Avisos sobre os arquivos .pst citados no perfil do Outlook (somente leitura dos .reg gravados)."""
+    from mpm.core import outlook
+    dest_user = to_user or dest_roots["profile"].name
+    files = outlook.report(saved, source, dest_user)
+    notes = [{"path": f.path, "status": f.status, "note": f.note} for f in files]
+    log("\nOutlook: as contas voltam sem senha (o Outlook pede a senha de cada uma na primeira vez).")
+    for f in files:
+        log(f"  {f.path}\n      {f.note}")
+    if not files:
+        log("  Nenhum arquivo .pst citado no perfil (contas só de servidor).")
+    return notes
 
 
 def _hand_over(user: str, plugin_ids: list[str], dest_roots: dict[str, Path], backends: Backends,

@@ -56,6 +56,7 @@ def _new_pc_menu(ask: Callable[[str], str], out: Callable[[str], None],
             "  2) Só o perfil e os arquivos\n"
             "  3) Só os programas\n"
             "  4) Só configurações e Wi-Fi\n"
+            "  5) Meu perfil + Outlook (pessoal, sem programas)\n"
             "  v) Voltar")
         if notice:
             out(notice)
@@ -63,7 +64,7 @@ def _new_pc_menu(ask: Callable[[str], str], out: Callable[[str], None],
         if choice in ("v", "voltar"):
             return None
         notice = ""
-        if choice in ("1", "2"):
+        if choice in ("1", "2", "5"):
             name = _ask_name(ask, out, "Nome do usuário novo: ")
             if not name:
                 continue
@@ -72,6 +73,8 @@ def _new_pc_menu(ask: Callable[[str], str], out: Callable[[str], None],
                 args.append("--admin")
             if choice == "1":
                 args.append("--full")
+            elif choice == "5":
+                args.append("--meu")
             return args
         if choice == "3":
             return ["rx", "--apps", "--install"]

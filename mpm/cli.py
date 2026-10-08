@@ -298,7 +298,7 @@ def _make_migration(args, client, workers, source_user):
         client, options, target=target,
         ask=_ask_yes_no,
         choose_profile=_choose_profile,
-        pause=None if args.yes else _pause_before_pass,
+        pause=None if args.yes or getattr(args, "meu", False) else _pause_before_pass,
         workers=workers,
     )
 
@@ -313,7 +313,9 @@ def _run_full(args, client, workers) -> int:
     from mpm.net.rx import RemoteError
     from mpm.net.settings import Backends, SettingsError, run_settings
 
-    backends = Backends(platforms.accounts(), platforms.appdata(), platforms.regtools(), platforms.devices())
+    personal = bool(getattr(args, "meu", False))
+    backends = Backends(platforms.accounts(), platforms.appdata(), platforms.regtools(),
+                        None if personal else platforms.devices())
     if not args.dry_run and backends.accounts.is_elevated() is False:
         print("Erro: abra o PowerShell como administrador (criar usuário e Wi-Fi exigem).", file=sys.stderr)
         return 2
@@ -324,6 +326,7 @@ def _run_full(args, client, workers) -> int:
         return 4
     print(f"Perfil de origem no TX: {source}")
     mode = args.full
+    steps = 2 if personal else 3
     if mode == "menu":
         mode = "express" if args.yes else apps_install.ask_mode(
             title="MIGRAÇÃO COMPLETA (perfil + programas + configurações e Wi-Fi)",
@@ -333,7 +336,7 @@ def _run_full(args, client, workers) -> int:
         return 0
     dest = Path(args.dest)
 
-    print("\n=== ETAPA 1/3: PERFIL E ARQUIVOS ===")
+    print(f"\n=== ETAPA 1/{steps}: PERFIL E ARQUIVOS ===")
     try:
         summary = _make_migration(args, client, workers, source).run()
     except (MigrationError, RemoteError, OSError) as exc:
@@ -348,19 +351,21 @@ def _run_full(args, client, workers) -> int:
               f"Veja {dest / 'mpm' / 'transfer-report.json'} e rode de novo para retomar.", file=sys.stderr)
         return 1
 
-    print("\n=== ETAPA 2/3: PROGRAMAS ===")
-    try:
-        report = run_apps_inventory(client, dest / "mpm", show_all=False, extra_ignore=args.ignore_app)
-        code = max(code, _install_programs(report, mode, only=None, dest=dest, dry_run=args.dry_run,
-                                           pin_versions=args.pin_versions, assume_yes=args.yes))
-    except (RemoteError, OSError) as exc:
-        print(f"\nErro: {exc}", file=sys.stderr)
-        return 4
+    if not personal:
+        print("\n=== ETAPA 2/3: PROGRAMAS ===")
+        try:
+            report = run_apps_inventory(client, dest / "mpm", show_all=False, extra_ignore=args.ignore_app)
+            code = max(code, _install_programs(report, mode, only=None, dest=dest, dry_run=args.dry_run,
+                                               pin_versions=args.pin_versions, assume_yes=args.yes))
+        except (RemoteError, OSError) as exc:
+            print(f"\nErro: {exc}", file=sys.stderr)
+            return 4
 
-    print("\n=== ETAPA 3/3: CONFIGURAÇÕES E WI-FI ===")
+    print("\n=== ETAPA 2/2: OUTLOOK ===" if personal else "\n=== ETAPA 3/3: CONFIGURAÇÕES E WI-FI ===")
     try:
         result = run_settings(
-            client, workers, backends, outdir=dest / "mpm", mode=mode, to_user=args.as_user,
+            client, workers, backends, outdir=dest / "mpm", mode=mode, only="^outlook$" if personal else None,
+            to_user=args.as_user,
             source_user=source, choose_profile=_choose_profile, assume_yes=args.yes, dry_run=args.dry_run,
             retries=args.retries, retry_wait=args.retry_wait)
     except (SettingsError, RemoteError, OSError, RuntimeError) as exc:
@@ -386,6 +391,16 @@ def cmd_rx(args: argparse.Namespace) -> int:
     )
     from mpm.net.security import AuthError, MissingDependency, short_fingerprint
 
+    if args.meu:
+        if args.full or args.settings or args.apps or args.appdata or args.install or args.netcheck \
+                or args.only is not None or args.to_user:
+            print("Erro: --meu já faz perfil + Outlook; não combina com "
+                  "--full/--settings/--apps/--appdata/--install/--only/--to-user/--netcheck.", file=sys.stderr)
+            return 2
+        if not args.as_user:
+            print("Erro: --meu exige --as-user NOME (o usuário que recebe tudo).", file=sys.stderr)
+            return 2
+        args.full = "express"
     as_user = args.as_user is not None
     if (args.admin or args.merge) and not as_user:
         print("Erro: --admin e --merge só fazem sentido com --as-user.", file=sys.stderr)
@@ -792,6 +807,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--full", nargs="?", const="menu", choices=("menu", "express", "custom"), metavar="MODO",
                    help="Tudo de uma vez, com --as-user NOME: copia o perfil, instala os programas e copia "
                         "configurações e Wi-Fi. MODO: express = sem perguntar; custom = você marca; sem MODO pergunta")
+    p.add_argument("--meu", action="store_true",
+                   help="MPM pessoal, com --as-user NOME: copia o perfil inteiro (Área de Trabalho, Documentos, "
+                        "Downloads...) e as configurações do Outlook (contas sem senha, assinaturas, .pst). "
+                        "Sem programas e sem Wi-Fi; não pergunta nada")
     p.add_argument("--netcheck", action="store_true",
                    help="Só mede a rede (latência e vazão com 1 e N conexões); não copia nada")
     p.add_argument("-y", "--yes", action="store_true",

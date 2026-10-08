@@ -8,7 +8,7 @@ pela rede, com cópia verificada por SHA-256. Uma alternativa simples e transpar
 > app settings and saved Wi-Fi). The old PC (TX) is read-only; the new PC (RX) controls and writes. Python 3.12+,
 > TLS 1.3 with a pairing code, SHA-256 verified copies. Documentation below is in Brazilian Portuguese.
 
-Status: **0.5.11** — fluxo completo (`--full`) validado em campo: criação do usuário e do perfil (26,5 GB, ~40 mil
+Status: **0.5.12** (modo pessoal `--meu`; o `--full` da 0.5.11) — fluxo completo (`--full`) validado em campo: criação do usuário e do perfil (26,5 GB, ~40 mil
 arquivos, 0 falhas), instalação de programas, configurações, registro e Wi-Fi; `mpm.exe` portátil para Windows;
 log de cada execução. Veja a [checklist](#roadmap) no fim.
 
@@ -380,6 +380,28 @@ powershell -ExecutionPolicy Bypass -File packaging\build_exe.ps1
 - Em cada conexão os arquivos vão um por vez; o ganho vem das conexões em paralelo.
 - 0.3: o código de contas só foi testado com um backend simulado; as chamadas ao Windows precisam de validação em campo (comece por `account-check`).
 
+### MPM pessoal: perfil inteiro + Outlook (`--meu`, 0.5.12)
+
+```powershell
+mpm.exe rx --as-user NOME [--admin] [--merge] --meu
+```
+
+Para mover **o meu usuário** de um PC para outro: copia o perfil inteiro (Área de Trabalho, Documentos, Downloads,
+Imagens...) e, em seguida, só o **Outlook clássico**. Não instala programas, não copia Wi-Fi nem outras
+configurações, não pergunta nada e não pausa entre as passadas. No menu: PC NOVO → opção 5.
+
+O que acompanha do Outlook: o perfil do registro (contas, servidores, portas, opções, painel de navegação) das
+versões 2010–2021/365, assinaturas, modelos (`NormalEmail.dotm`, `.oft`), papéis de carta, dicionário pessoal,
+autocompletar (RoamCache) e os arquivos `.pst` que estão no perfil.
+
+- **Senhas das contas não vão** (ficam cifradas com a conta do Windows e não abrem em outro usuário/PC): o Outlook
+  pede a senha de cada conta uma vez; contas Microsoft 365/Exchange pedem o login de novo. Todo o resto vem pronto.
+- Feche o Outlook nos dois PCs e **não abra o Outlook no PC novo antes** da migração (ele criaria um perfil novo).
+- `.pst` **fora** do perfil (ex.: `D:\Email`) não são copiados: o relatório lista cada um e avisa. Se o usuário novo
+  tem nome diferente do antigo, o Outlook pede para localizar os `.pst` (use *Procurar* na pasta nova).
+- `.ost` (cache do servidor) não é copiado; o Outlook baixa de novo.
+- Novo Outlook (aplicativo `olk.exe`) guarda tudo na nuvem: não há o que migrar.
+
 ## Discovery (sem rede)
 
 ```powershell
@@ -456,4 +478,5 @@ mpm/
 - [x] 0.5.9 Log de cada execução do rx/tx (com data e hora, sem segredos) em %ProgramData%\MPM\logs
 - [x] 0.5.10 Admin checado antes do pareamento; caminhos longos; arquivos em uso no TX viram aviso nas configurações; lista "instale à mão"
 - [x] 0.5.11 Caminho longo também nas configurações (SettingsMigration tinha o próprio _target)
+- [x] 0.5.12 `--meu`: perfil + Outlook (perfil de contas no registro, modelos, .pst) — a validar em campo
 - [ ] 0.6 USB/offline como transporte alternativo

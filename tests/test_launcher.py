@@ -41,7 +41,7 @@ class LauncherTest(unittest.TestCase):
     def test_second_menu_is_compact(self):
         _a, text = self.choose("2", "v", "q")
         sub = text.split("MPM · PC NOVO")[1].split("MUNHOS PC")[0]
-        self.assertLessEqual(len([l for l in sub.splitlines() if l.strip()]), 6)
+        self.assertLessEqual(len([l for l in sub.splitlines() if l.strip()]), 7)
 
     def test_enter_in_new_menu_picks_recommended_full(self):
         self.assertEqual(self.choose("2", "", "maria", "")[0], ["rx", "--as-user", "maria", "--full"])

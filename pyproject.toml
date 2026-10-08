@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mpm"
-version = "0.5.11"
+version = "0.5.12"
 description = "MPM — Munhos PC Migrator: migração de PCs Windows pela rede (perfil, programas, configurações e Wi-Fi)"
 readme = "README.md"
 license = "LicenseRef-PolyForm-Noncommercial-1.0.0"

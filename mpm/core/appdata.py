@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from mpm.core import outlook
+
 ROOTS = ("appdata", "localappdata", "documents", "profile")
 
 
@@ -62,10 +64,15 @@ PLUGINS: tuple[Plugin, ...] = (
     Plugin("dbbrowser", "DB Browser for SQLite", (("appdata", "sqlitebrowser"),)),
     Plugin("openvpn", "OpenVPN (perfis .ovpn)", (("profile", "OpenVPN"),),
            warning="contém chaves privadas e certificados: trate com cuidado", group="rede"),
-    Plugin("outlook", "Outlook (assinaturas e arquivos .pst)",
-           (("appdata", "Microsoft/Signatures"), ("appdata", "Microsoft/Outlook"),
-            ("documents", "Arquivos do Outlook"), ("documents", "Outlook Files")), group="e-mail",
-           warning="contas Microsoft 365 se reconfiguram ao entrar; só os .pst e as assinaturas precisam ser levados"),
+    Plugin("outlook", "Outlook (contas, perfil, assinaturas e arquivos .pst)",
+           (("appdata", "Microsoft/Signatures"), ("appdata", "Microsoft/Outlook"), ("appdata", "Microsoft/Templates"),
+            ("appdata", "Microsoft/Stationery"), ("appdata", "Microsoft/UProof"),
+            ("localappdata", "Microsoft/Outlook/RoamCache"),
+            ("documents", "Arquivos do Outlook"), ("documents", "Outlook Files")),
+           registry=outlook.REGISTRY_KEYS, group="e-mail",
+           warning="o perfil (contas, servidores, opções) vai pelo registro; as senhas NÃO (cifradas pelo Windows): "
+                   "o Outlook pede a senha de cada conta uma vez. Feche o Outlook nos dois PCs e não o abra no "
+                   "PC novo antes; .pst fora do perfil não são copiados"),
     Plugin("ssh", "Chaves e configuração SSH", (("profile", ".ssh"),), group="rede",
            warning="contém chaves privadas: copie só por canal seguro e confira as permissões no RX"),
     Plugin("git", "Configuração do Git", (("profile", ".gitconfig"),), group="rede"),
